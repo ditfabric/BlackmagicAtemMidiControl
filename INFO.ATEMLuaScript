@@ -1,0 +1,38 @@
+--  EXECUTE THIS SCRIPT TO SEE MIDI AND ATEM DEVICES AVAILABLE      
+CLS();
+VSLog("-----------------------------------------------------------------------------------------");
+VSLog("-                                                                                       - ");
+VSLog("-          MIDI BASED CAMERA CONTROL FOR BLACKMAGIC STUDIO CAMERAS AND ATEM             - ");
+VSLog("-                                                                                       - ");
+VSLog("----------------------------------------------------------------------------------------- ");
+VSLog("                                                                  igor smierzewski, is063  ");
+VSLog("");
+VSLog("");
+         VSLog("-------------------------------------------------------------------------------------")
+VSLog("  M I D I I N    D e v i c e s")
+VSLog("-------------------------------------------------------------------------------------")
+VSLog(" ID   Device Name                                       Status")
+VSLog("-------------------------------------------------------------------------------------")
+for i = 1, MIDIInDeviceCount() do
+    VSLog( LPad(i,3) .. "   " .. RPad( MIDIInDeviceName(i), 50) .. MIDIInDeviceStatus( i ) );
+end;
+VSLog("");
+VSLog("");
+VSLog("");
+VSLog("------------------------------------------------------------------------------------------------------------------------------")
+VSLog("     A T E M    M I X E R S   I N   N E T W O R K ")
+VSLog( "-----------------------------------------------------------------------------------------------------------------------------" );
+VSLog( " ID   IP Address          Type                                  Mode         Description                 TX" );
+VSLog( "-----------------------------------------------------------------------------------------------------------------------------" );
+for i = 1, ATEMMixerCount() do
+    VSLog( LPad( i, 3 ) ..
+                 "   "  .. RPad( ATEMMixerGetIPAddress(   i ), 17 ) ..
+                 "   "  .. RPad( ATEMMixerGetMixerType(   i ), 35 ) ..
+                 "   "  .. RPad( ATEMMixerGetVideMode(    i ), 10 ) ..
+                 "   "  .. RPad( ATEMMixerGetDescription( i ), 25 ) ..
+                 "   "  .. RPad( ATEMMixerInputGetLongName( i, ATEMMixerMEGetProgramInput( i, 1 ) ), 25) );
+end;
+VSLog( "-----------------------------------------------------------------------------------------------------------------------------" );
+
+
+

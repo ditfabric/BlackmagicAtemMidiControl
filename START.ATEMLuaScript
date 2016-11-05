@@ -1,0 +1,35 @@
+-- -----------------------------------------------------------------------------------------
+-- -                                                                                       -
+-- -          MIDI BASED CAMERA CONTROL FOR BLACKMAGIC STUDIO CAMERAS AND ATEM             -
+-- -                                                                                       -
+-- -----------------------------------------------------------------------------------------
+--                                                                   igor smierzewski, is063
+--
+-- Specify the number of the MIDI-Device (execute Info-Script to get the values)
+MIDIDeviceNumber = 1;
+--
+-- THEN, SETUP SOME THINGS IN "HDM_MIDI_PROCESSOR", THEN EXECUTE THIS SCRIPT.
+--
+--
+--
+CLS();
+VSLog("-----------------------------------------------------------------------------------------");
+VSLog("-                                                                                       - ");
+VSLog("-          MIDI BASED CAMERA CONTROL FOR BLACKMAGIC STUDIO CAMERAS AND ATEM             - ");
+VSLog("-                                                                                       - ");
+VSLog("----------------------------------------------------------------------------------------- ");
+VSLog("                                                                  igor smierzewski, is063  ");
+VSLog("");
+VSLog("");
+
+                                                                            
+VSLog("Opening Midi Device [" .. MIDIDeviceNumber .. "]");
+MIDIInDeviceOpen( MIDIDeviceNumber );
+VSLog("ok.");
+VSLog("Attaching Event Handler");
+EventsDeleteHandler(1);    -- delete possibly existing handler (especially while dev)
+EventsAddHandler( "OnMIDIDeviceInMessage", "HDM_MIDI_PROCESSOR", "MIDI_StandardMessage_EventHandler" );
+VSLog("ok.");
+
+
+

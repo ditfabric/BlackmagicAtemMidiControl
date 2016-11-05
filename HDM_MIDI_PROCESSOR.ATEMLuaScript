@@ -1,0 +1,100 @@
+-- -----------------------------------------------------------------------------------------
+-- -                                                                                       -
+-- -          MIDI BASED CAMERA CONTROL FOR BLACKMAGIC STUDIO CAMERAS AND ATEM             -
+-- -                                                                                       -
+-- -----------------------------------------------------------------------------------------
+--                                                                   igor smierzewski, is063
+--
+-- SETUP SOME BASIC VALUES HERE AND THEN EXECUTE THE SCRIPT "INIT".
+--
+-- The number of the ATEMDevice to control (execute Info-Script to get the values)
+ATEMDeviceNumber = 1;
+--
+-- Specify the AUX-Channel in the ATEM you want to switch with the MIDI Control
+AUXToSwitch = 1;
+--
+-- Now setup MIDI Values to trigger actions
+-- ignore this:
+CameraMapLength = 4;
+CameraMap = {};
+CameraMap[1] = {};
+CameraMap[2] = {};
+CameraMap[3] = {};
+CameraMap[4] = {};
+
+-- for each Camera specify:
+-- MIDICh: the Midi Channel on which the control sends the CC-Events
+-- switchCC: the CC Number which triggers the camera switch on the Aux
+-- irisCC: the CC Number which controls the Iris
+-- blackCC: the CC Number which controls the black level
+-- input: the number of the input which belongs to the camera (0 is black!)
+CameraMap[1]["MIDICh"] = 1;     CameraMap[1]["switchCC"] = 1;    CameraMap[1]["irisCC"] = 11;     CameraMap[1]["blackCC"] = 21;     CameraMap[1]["input"] = 1;
+CameraMap[2]["MIDICh"] = 1;     CameraMap[2]["switchCC"] = 2;    CameraMap[2]["irisCC"] = 12;     CameraMap[1]["blackCC"] = 22;     CameraMap[2]["input"] = 2;
+CameraMap[3]["MIDICh"] = 1;     CameraMap[3]["switchCC"] = 3;    CameraMap[3]["irisCC"] = 13;     CameraMap[1]["blackCC"] = 23;     CameraMap[3]["input"] = 3;
+CameraMap[4]["MIDICh"] = 1;     CameraMap[4]["switchCC"] = 4;    CameraMap[4]["irisCC"] = 14;     CameraMap[1]["blackCC"] = 24;     CameraMap[4]["input"] = 4;
+
+
+
+
+
+
+
+
+-- Define MIDI Event Handler Function                 
+
+function MIDI_StandardMessage_EventHandler( pvDeviceID, pvStatusByte, pvDataByte1, pvDataByte2 )
+-- VSLog( "MIDI IN[" .. pvDeviceID .. "] : " .. IntToHex( pvStatusByte, 2 ) .. "," .. IntToHex( pvDataByte1, 2 )  .. "," .. IntToHex( pvDataByte2, 2 ) );
+-- VSLog( "MIDI IN[" .. pvDeviceID .. "] : " .. pvStatusByte .. "," ..  pvDataByte1  .. "," .. pvDataByte2 );
+
+
+        -- check if CC Message (int value between 175 and 192)
+        if (pvStatusByte > 175) then
+            if (pvStatusByte < 192) then
+
+            -- save data to object
+            midiMessage = {};
+            midiMessage["channel"] = pvStatusByte - 175;
+            midiMessage["cc"] = pvDataByte1;
+            midiMessage["value"] = pvDataByte2;
+
+            VSLog("MIDI CC on CH " .. midiMessage.channel .. ", CC " .. midiMessage.cc .. ", value: " .. midiMessage.value);
+
+
+            for i = 1, CameraMapLength, 1 do
+                    if (midiMessage.channel == CameraMap[i].MIDICh) then
+                        if (midiMessage.cc == CameraMap[i].switchCC) then
+                            if (midiMessage.value > 67) then
+                               -- swicth AUX here
+
+                                -- ATEMMixerAUXSetInput( ATEMDeviceNumber, AUXToSwitch,CameraMap.input );
+                                VSLog("Switching AUX " .. AUXToSwitch .. " to input " .. CameraMap[i].input);
+                                                                                       
+                            end  -- if on switch
+
+                        elseif (midiMessage.cc == CameraMap[i].irisCC) then
+
+
+                                VSLog("Setting Iris Value on Cam " .. i .. " to value " .. midiMessage.value);
+
+                                -- ATEMMixerCCUSetLensIris( ATEMDeviceNumber, i, midiMessage.value / 127);
+
+                        elseif (midiMessage.cc == CameraMap[i].blackCC) then
+
+
+                                VSLog("Setting Black Level (Lift) on Cam " .. i .. " to value " .. midiMessage.value);
+
+                                -- ATEMMixerCCUSetLiftY( ATEMDeviceNumber, i, midiMessage.value / 127);
+
+                        end; -- if cc is in map i
+
+                    end;  -- is switch Channel in map i
+                end;     --for
+
+
+
+           end; -- if status byte < 192
+        end; -- if status byte > 175
+
+end;
+
+
